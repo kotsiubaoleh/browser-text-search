@@ -1,16 +1,11 @@
 {
   "dependencies": {
-    "@assemblyscript/loader": "^0.19.16",
-    "static-server": "^2.2.1"
+    "static-server": "^2.2.1",
+    "wabt": "^1.0.24"
   },
   "scripts": {
     "start": "cd public && static-server",
-    "asbuild:untouched": "asc assembly/index.ts --target debug",
-    "asbuild:optimized": "asc assembly/index.ts --target release",
-    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized && cp build/optimized.wasm public/optimized.wasm",
-    "test": "node tests"
-  },
-  "devDependencies": {
-    "assemblyscript": "^0.19.16"
+    "test": "node tests",
+    "build": "wat2wasm src/main.wat -o public/main.wasm && wasm2wat public/main.wasm -o src/srcMain.wat"
   }
 }

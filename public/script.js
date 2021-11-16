@@ -1,10 +1,32 @@
 let logText;
 
-loader.instantiate(
-    fetch("optimized.wasm")
-).then(({ exports }) => {
-    console.log(exports.add);
-    console.log(exports.add(1, 5));
+let utf8decoder = new TextDecoder();
+let utf8encoder = new TextEncoder();
+const memory = new WebAssembly.Memory({initial: 1});
+const memortArr = new Uint8Array(memory.buffer);
+
+
+const importObj = {
+    js:{
+        mem: memory
+    }
+}
+
+const WASM = {};
+
+WebAssembly.instantiateStreaming(
+    fetch("main.wasm"),
+    importObj
+).then((obj) => {
+    WASM.add = obj.instance.exports.add;
+    WASM.store = obj.instance.exports.store;
+    WASM.search = obj.instance.exports.search;
+
+    // memortArr.set(utf8encoder.encode('wwwwwww'));
+    // console.log(add(100, 3));
+    // console.log('before', utf8decoder.decode(memory.buffer));
+    // WASM.store(0, 0x21);
+    // console.log('after', utf8decoder.decode(memory.buffer));
 })
 
 async function process() {
@@ -46,6 +68,14 @@ function nativeSearch(term) {
     }
 
     //return matches;
+}
+
+function wasmSearch(text, str) {
+    const binText = utf8encoder.encode(text);
+    memortArr.set(binText);
+    const binStr = utf8encoder.encode(str);
+    memortArr.set(binStr, binText.length);
+    return WASM.search(0, binText.length, binText.length, binStr.length);
 }
 
 function bench(callback, timename) {
